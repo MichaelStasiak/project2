@@ -1,0 +1,37 @@
+
+/* unvisited link */
+a:link {
+    color: white;
+    text-decoration: none;
+  }
+  
+  /* visited link */
+  a:visited {
+    color: white;
+    text-decoration: none;
+  }
+  
+  /* mouse over link */
+  a:hover {
+    color: hotpink;
+    text-decoration: none;
+  }
+  
+  /* selected link */
+  a:active {
+    color: white;
+    text-decoration: none;
+  }
+
+  footer {
+    display: flex;
+    justify-content: center;
+  }
+
+  span {
+    font-size: 10px;
+  }
+
+#divDepartment .btn-warning {
+  width: 73px;
+}
