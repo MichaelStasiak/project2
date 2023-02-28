@@ -15,7 +15,6 @@
 		$output['status']['code'] = "300";
 		$output['status']['name'] = "Failure";
 		$output['status']['description'] = "Database unavailable";
-		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
 
 		echo json_encode($output);
 		exit;
@@ -46,7 +45,7 @@
 		$output['status']['code'] = "200";
 		$output['status']['name'] = "OK";
 		$output['status']['description'] = "Success";
-		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
+		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) * 1000 . " ms";
 		$output['status']['query'] = $sql;
 		$output['data'] = $data;
 	}

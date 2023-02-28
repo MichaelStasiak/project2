@@ -35,3 +35,7 @@ a:link {
 #divDepartment .btn-warning {
   width: 73px;
 }
+
+body {
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+}

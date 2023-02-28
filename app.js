@@ -81,6 +81,7 @@ $(() => {
 
 		//	wyczyścić pola:
 		$("#modEmployee input").val("") ;
+		$("div.alert").addClass("visually-hidden");
 
 		let sel = $("#modEmployee select");
 		//	wyczyść zawartość:
@@ -99,6 +100,7 @@ $(() => {
 
 		//	wyczyścić pola:
 		$("#modDepartment input").val("") ;
+		$("div.alert").addClass("visually-hidden");
 
 		let sel = $("#modDepartment select");
 		//	wyczyścić zawartość:
@@ -118,6 +120,8 @@ $(() => {
 
 		//	wyczyścić pola:
 		$("#modLocation input").val("") ;
+
+		$("div.alert").addClass("visually-hidden");
 	});
 
 	//	button "Add" Employee:
@@ -136,7 +140,7 @@ $(() => {
 				result => {
 					// console.log(result);
 					loadEmployees();
-					$("div.alert-success").toggleClass("visually-hidden")
+					$("div.alert-success").removeClass("visually-hidden")
 				}
 			);
 		} else {
@@ -152,7 +156,7 @@ $(() => {
 				result => {
 					// console.log(result);
 					loadEmployees();
-					$("div.alert-success").toggleClass("visually-hidden");
+					$("div.alert-success").removeClass("visually-hidden");
 				}
 			);
 		}
@@ -175,7 +179,7 @@ $(() => {
 				result => {
 					// console.log(result);
 					loadDepartments();
-					$("div.alert-success").toggleClass("visually-hidden");
+					$("div.alert-success").removeClass("visually-hidden");
 				}
 			);
 		} else {
@@ -187,7 +191,7 @@ $(() => {
 				result => {
 					// console.log(result);
 					loadDepartments();
-					$("div.alert-success").toggleClass("visually-hidden");
+					$("div.alert-success").removeClass("visually-hidden");
 				}
 			);
 		}
@@ -204,11 +208,11 @@ $(() => {
 				result => {
 					// console.log(result);
 					loadLocations();
-					$("div.alert-success").toggleClass("visually-hidden");
+					$("div.alert-success").removeClass("visually-hidden");
 				}
 			);
-			// .done($("div.alert-success").toggleClass("visually-hidden"))
-			// .fail($("div.alert-warning").toggleClass("visually-hidden"))
+			// .done($("div.alert-success").removeClass("visually-hidden"))
+			// .fail($("div.alert-warning").removeClass("visually-hidden"))
 			// .always(loadLocations());
 		} else {
 			console.log("Event: Update Location");
@@ -218,17 +222,38 @@ $(() => {
 				result => {
 					// console.log(result);
 					loadLocations();
-					$("div.alert-success").toggleClass("visually-hidden");
+					$("div.alert-success").removeClass("visually-hidden");
 				}
 			);
 		}
 	});
+
+	//	ustawienie kodu zdarzenia wszystkim klawiszom z klasą btn-close do kasowania wsztystkich alertów:
+	$("button.btn-close").click(() => $("div.alert").addClass("visually-hidden"));
+
+	//	testowanie jakie klasy się zmieniają po naciśnięciu klawiszy z głównego menu:
+	// $("body button").click(() => console.log("..."));
+	$("#btnTest1").click(() => {
+		console.log($("div.collapse"));
+		console.log($("nav button"));
+	});
+	//	i już wiem że mamy dodaną klasę: show
+	//	problem w tym że button ma swoją klasę collapsed, a div swoją klasę show; i musiby jakoś zapoanować nad tym burdelikiem Stasiaka
+	//	!widać że to nie jest właściwy komponent do tego celu!
+
+	//	test programowego wyzwalania zdarzeń:
+	$("#btnTest2").click(() => $("#btnLocations").click());
 });
 
 //	====================== EMPLOYEES ========================
 function loadEmployees() {
 	// console.log($("#btnEmployees"));
 	// console.log($("#btnEmployees").hasClass("collapsed"));
+
+	$("div.alert").addClass("visually-hidden");
+
+	if ($("#divDepartment").hasClass("show")) $("#btnDepartments").click();
+	if ($("#divLocation")  .hasClass("show")) $("#btnLocations")  .click();
 
 	if (!$("#btnEmployees").hasClass("collapsed")) {
 		console.log("Load Employees:");
@@ -329,6 +354,7 @@ function editEmployee() {
 	$("#btnEmpAdd").text("Update");
 
 	//	wywołać modal: modal się wywołuje automatycznie (bootstrap)
+	$("div.alert").addClass("visually-hidden");
 
 	$.post("php/getPersonnelById.php",
 		{id: this.value},
@@ -350,19 +376,13 @@ function editEmployee() {
 			sel.empty();
 			rdd.forEach(item => sel.append(new Option(item["name"], item["id"])));
 			sel.val(rdp.departmentID);
-
-			//	wywołać endpoint - nie tu; to ma zrobić klawisz potwierdzający
-			//$("#btnEmpAdd").click(updateEmployee);
 		}
 	);
 }
 
-function updateEmployee() {
-	//jak usunąć obsługę zdarzenia klawisza Add??
-}
-
 function delEmployee() {
 	console.log("delEmployee:", this.value);	//	'value' to atrybut elementu html
+	$("div.alert").addClass("visually-hidden");
 
 	$.post("php/delEmployee.php", {id: this.value}, result => {
 		if (result.status.code == 200) {
@@ -378,11 +398,11 @@ function delEmployee() {
 			// console.log(t3p);
 			//$(tpp).prev().remove();	//	gdy nie było div.accordion-item
 			$(t3p).remove();
-			$("div.alert-success").toggleClass("visually-hidden");
+			$("div.alert-success").removeClass("visually-hidden");
 		} else {
 			console.log("Error:", result.status.description);
 
-			$("div.alert-danger").toggleClass("visually-hidden");
+			$("div.alert-danger").removeClass("visually-hidden");
 		}
 	});
 
@@ -399,6 +419,11 @@ function delEmployee() {
 
 //	==================== DEPARTMENTS ==========================
 function loadDepartments() {
+	$("div.alert").addClass("visually-hidden");
+
+	if ($("#divEmployee").hasClass("show")) $("#btnEmployees").click();
+	if ($("#divLocation").hasClass("show")) $("#btnLocations").click();
+
 	if (!$("#btnDepartments").hasClass("collapsed")) {
 		console.log("Load Departments:");
 
@@ -426,7 +451,7 @@ function loadDepartments() {
 						"<tr>\
 							<td>" + item["id"] + "</td>\
 							<td>" + item["name"] + "</td>\
-							<td>" + item["locationId"] + "</td>\
+							<td>" + item["locName"] + "</td>\
 							<td>\
 								<button type='button' class='btn btn-warning editDep' data-bs-toggle='modal' data-bs-target='#modDepartment' value='" + item["id"] + "'> Edit </button><br>\
 								<button type='button' class='btn btn-danger mt-1 delDep' value='" + item["id"] + "'>Delete</button>\
@@ -447,6 +472,8 @@ function editDepartment() {
 	//	skorygować modal:
 	$("#modDepartment h5").text("Update department");
 	$("#btnDepAdd").text("Update");
+
+	$("div.alert").addClass("visually-hidden");
 
 	$.post("php/getDepartmentById.php",
 		{id: this.value},
@@ -472,6 +499,7 @@ function editDepartment() {
 
 function delDepartment() {
 	console.log("delDepartment:", this.value);	//	'value' to atrybut elementu html
+	$("div.alert").addClass("visually-hidden");
 
 	$.post("php/delDepartment.php", {id: this.value}, result => {
 		if (result.status.code == 200) {
@@ -482,17 +510,22 @@ function delDepartment() {
 			//console.log($(this).parent().parent());	//	tr
 
 			$(this).parent().parent().remove();
-			$("div.alert-success").toggleClass("visually-hidden");
+			$("div.alert-success").removeClass("visually-hidden");
 		} else {
 			// console.log("Error:", result.status.description);
 
-			$("div.alert-danger").toggleClass("visually-hidden");
+			$("div.alert-danger").removeClass("visually-hidden");
 		}
 	});
 }
 
 //	======================= LOCATIONS ===========================
 function loadLocations() {
+	$("div.alert").addClass("visually-hidden");
+
+	if ($("#divEmployee")  .hasClass("show")) $("#btnEmployees")  .click();
+	if ($("#divDepartment").hasClass("show")) $("#btnDepartments").click();
+
 	if (!$("#btnLocations").hasClass("collapsed")) {
 		console.log("Load Locations:");
 
@@ -553,6 +586,8 @@ function editLocation() {
 	$("#modLocation h5").text("Update location");
 	$("#btnLocAdd").text("Update");
 
+	$("div.alert").addClass("visually-hidden");
+
 	$.post("php/getLocationById.php",
 		{id: this.value},
 		result => {
@@ -563,13 +598,16 @@ function editLocation() {
 			// console.log($("#modLocation input"));
 			$("#modLocation #id")  .val(rd.id);
 			$("#modLocation #name").val(rd.name);
-		});
+		}
+	);
 }
 
 function delLocation() {
 	console.log("deleteLocation:", this.value);	//	'value' to atrybut elementu html
+	$("div.alert").addClass("visually-hidden");
 
 	$.post("php/delLocation.php", {id: this.value}, result => {
+		//console.log($("div.alert-danger"));
 		if (result.status.code == 200) {
 			//console.log(result);
 			//console.log(this);		//	tak, zwraca wciśnięty <button>
@@ -578,12 +616,13 @@ function delLocation() {
 			//console.log($(this).parent().parent());	//	tr
 
 			$(this).parent().parent().remove();
-			$("div.alert-success").toggleClass("visually-hidden");
+			$("div.alert-success").removeClass("visually-hidden");
 		} else {
 			// console.log("Error:", result.status.description);
 
-			$("div.alert-danger").toggleClass("visually-hidden");
+			$("div.alert-danger").removeClass("visually-hidden");
 		}
+		//console.log($("div.alert-danger"));
 	});
 }
 
@@ -609,3 +648,16 @@ function delLocation() {
 
 //	z getXxxById.php i getAllxxx zrobić jeden skrypt
 //	z Add & Update też zrobić jeden skrypt
+
+//	powodem błędów w zaptaniach SQL były:
+//	- podzielone na linie zapytania sql, a w nich znaki \n i \t
+//	- duże litery w nazwach tabel
+//	- duże litery w nazwach kolumn
+
+//	Masz spierdoloną stopkę - statyczną - nie rusza się na koniec strony.
+//	Wytłumacz mi: po co ci w navbar'ze clasa collapse?
+//	id w tabelach, po co? skoro są takie same
+
+// cd.mikestasiak.co.uk
+// server IP:Port: 153.92.6.50:443
+// client IP:Port: 46.204.68.166:29896

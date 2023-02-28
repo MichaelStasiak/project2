@@ -20,7 +20,7 @@
 		exit;
 	}
 
-	$sql	= "SELECT * FROM department";
+	$sql	= "SELECT D.id, D.name, L.name AS locName FROM department D, location L WHERE D.locationID = L.id ORDER BY id";
 	$result = $conn->query($sql);
 
 	if (!$result) {
@@ -35,9 +35,10 @@
 		$output['status']['code'] = "200";
 		$output['status']['name'] = "ok";
 		$output['status']['description'] = "success";
-		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
+		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) * 1000 . " ms";
 		$output['data'] = $data;
 	}
+	$output['status']['query'] = $sql;
 
 	$conn->close();
 	echo json_encode($output);
