@@ -36,19 +36,18 @@
 		$output['status']['code'] = "400";
 		$output['status']['name'] = "Executed";
 		$output['status']['description'] = "Query failed";
-		$output['status']['query'] = $sql;
 	} else {
 		$data = [];
 		while ($row = $result->fetch_assoc())
 			array_push($data, $row);
 
 		$output['status']['code'] = "200";
-		$output['status']['name'] = "OK";
+		$output['status']['name'] = "Ok";
 		$output['status']['description'] = "Success";
 		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) * 1000 . " ms";
-		$output['status']['query'] = $sql;
 		$output['data'] = $data;
 	}
+	$output['status']['query'] = $sql;
 
 	$conn->close();
 	echo json_encode($output);

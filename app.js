@@ -1,15 +1,10 @@
-//	wywołanie mojego endpoint'a:
-/*$.get("php/getDepartments.php",
-	result => {
-		console.log(result);
-		if (result.status.code == 200) {
-			var rd = result.data;
-			console.log(rd[0].name);
-			$("#dep").html(rd[0].name);
-		}
-		else console.log("else: status.code != 200");
-	}
-);*/
+function showAlertSuccess() {
+	$("div.alert-success").removeClass("visually-hidden");
+}
+
+function hideAlerts() {
+	$("div.alert").addClass("visually-hidden");
+}
 
 //	DocumentReady Event in jQ:
 $(() => {
@@ -24,7 +19,7 @@ $(() => {
 	//	Button Locations:
 	$("#btnLocations")	.click(() => loadLocations());
 
-	//	Button Search: &
+	//	Button Search: #
 	$(".btn-info").click(() => {
 		console.log("Search:");
 		//	kasowanie starych danych:
@@ -40,9 +35,8 @@ $(() => {
 			result => fillEmployees(result));
 	});
 
-	//	sortowanie: &&
+	//	sortowanie: ##
 	// console.log($(".btn-outline-primary"));		//	są 2
-
 	$(".btn-outline-primary").first().click(() => {
 		console.log("Sort ascending:");
 		$("#employees").empty();
@@ -72,7 +66,7 @@ $(() => {
 	// console.log($("#divDepartment button.btn-success"));	//	1x
 
 	//	Button "Add Employee":
-	$("#btnEmployeeAdd").click(() => {
+	$("#btnEmployeeAdd_").click(() => {
 		// console.log($("#btnEmployeeAdd"));
 
 		//	skorygować modal:
@@ -80,8 +74,8 @@ $(() => {
 		$("#btnEmpAdd").html("Add");
 
 		//	wyczyścić pola:
-		$("#modEmployee input").val("") ;
-		$("div.alert").addClass("visually-hidden");
+		$("#modEmployee input").val("");
+		hideAlerts();
 
 		let sel = $("#modEmployee select");
 		//	wyczyść zawartość:
@@ -91,7 +85,7 @@ $(() => {
 	});
 
 	//	Button "Add Department":
-	$("#btnDepartmentAdd").click(() => {
+	$("#btnDepartmentAdd_").click(() => {
 		// console.log($("#btnDepartmentAdd"));
 
 		//	skorygować modal:
@@ -100,7 +94,7 @@ $(() => {
 
 		//	wyczyścić pola:
 		$("#modDepartment input").val("") ;
-		$("div.alert").addClass("visually-hidden");
+		hideAlerts();
 
 		let sel = $("#modDepartment select");
 		//	wyczyścić zawartość:
@@ -111,7 +105,7 @@ $(() => {
 	});
 
 	//	Button "Add Location":
-	$("#btnLocationAdd").click(() => {
+	$("#btnLocationAdd_").click(() => {
 		// console.log($("#btnLocationAdd"));
 
 		//	skorygować modal:
@@ -120,116 +114,252 @@ $(() => {
 
 		//	wyczyścić pola:
 		$("#modLocation input").val("") ;
-
-		$("div.alert").addClass("visually-hidden");
+		hideAlerts();
 	});
 
-	//	button "Add" Employee:
-	// $("#modEmployee .btn-success").click(() => {
-	$("#btnEmpAdd").click(() => {
-		if ($("#btnEmpAdd").text() == "Add") {
-			console.log("Event: Add Employee");
-			// console.log($("#modEmployee input"));
-			// console.log($("#modEmployee select"));
-			$.post("php/addEmployee.php",
-				{fName: $("#modEmployee input")[1].value,
-				 lName: $("#modEmployee input")[2].value,
-				 title: $("#modEmployee input")[3].value,
-				 email: $("#modEmployee input")[4].value,
-				 depId: $("#modEmployee select").val()},
+	//	Modal Employee show:
+	// $("#modEmployee").show(() => console.log("modal show 2"));	//	!to blokuje wyświetlanie danych!
+	$("#modEmployee").on("show.bs.modal", (ev) => {
+		// console.log(ev);
+		// console.log(ev.relatedTarget);
+
+		hideAlerts();
+		const src = ev.relatedTarget;	//	źródło zdarzenia
+
+		//	wyczyszczenie pól:
+		$("#frmEmployee input").val("");
+		//	wyczyszczenie select'a:
+		let sel = $("#frmEmployee select");
+		sel.empty();
+		// $("#frmEmployee").reset();	//	"Unaught TypeError: $(...).reset is not a function"
+
+		//	określenie typu operacji: Add or Edit:
+		if (src == $("#btnEmployeeAdd")[0]) {
+			//	skorygować modal:
+			$("#modEmployee h5").html("Add employee");
+			// $("#btnEmpAdd").show();
+			// $("#btnEmpEdt").hide();
+
+			//	wypełnij aktualnymi danymi:
+			$.get("php/getAllDepartments.php", result => result.data.forEach(item => sel.append(new Option(item["name"], item["id"]))));
+		}
+		else {
+			//	skorygować modal:
+			$("#modEmployee h5").text("Edit employee");
+			// $("#btnEmpAdd").hide();
+			// $("#btnEmpEdt").show();
+
+			//	wypełnij aktualnymi danymi:
+			$.post("php/getPersonnelById.php",
+				{id: src.value},
 				result => {
-					// console.log(result);
-					loadEmployees();
-					$("div.alert-success").removeClass("visually-hidden")
-				}
-			);
-		} else {
-			console.log("Event: Update Employee");
-			//potrzebne ukryte pole z id; dodałem
-			$.post("php/updateEmployee.php",
-				{id:    $("#modEmployee #id").val(),
-				 fName: $("#modEmployee input")[1].value,
-				 lName: $("#modEmployee input")[2].value,
-				 title: $("#modEmployee input")[3].value,
-				 email: $("#modEmployee input")[4].value,
-				 depId: $("#modEmployee select").val()},
-				result => {
-					// console.log(result);
-					loadEmployees();
-					$("div.alert-success").removeClass("visually-hidden");
+					let rdp = result.data.personnel;
+					let rdd = result.data.department;
+
+					//	wstrzyknąć dane:
+					// console.log($("#modEmployee input"));
+					$("#frmEmployee #id").val(rdp.id);
+					$("#frmEmployee input")[1].value = rdp.firstName;
+					$("#frmEmployee input")[2].value = rdp.lastName;
+					$("#frmEmployee input")[3].value = rdp.jobTitle;
+					$("#frmEmployee input")[4].value = rdp.email;
+					rdd.forEach(item => sel.append(new Option(item["name"], item["id"])));
+					sel.val(rdp.departmentID);
 				}
 			);
 		}
+	});
+
+	//	Modal Department show:
+	$("#modDepartment").on("show.bs.modal", (ev) => {
+		hideAlerts();
+		const src = ev.relatedTarget;
+
+		//	wyczyszczenie pól:
+		$("#frmDepartment input").val("");
+		//	wyczyszczenie select'a:
+		let sel = $("#frmDepartment select");
+		sel.empty();
+
+		//	określenie typu operacji: Add or Edit:
+		if (src == $("#btnDepartmentAdd")[0]) {
+			//	skorygować modal:
+			$("#modDepartment h5").html("Add department");
+
+			// wypełnij aktualnymi danymi:
+			$.get("php/getAllLocations.php", result => result.data.forEach(item => sel.append(new Option(item["name"], item["id"]))));
+		}
+		else {
+			//	skorygować modal:
+			$("#modDepartment h5").html("Edit department");
+
+			//	wypełnij aktualnymi danymi:
+			$.post("php/getDepartmentById.php",
+				{id: src.value},
+				result => {
+					let rdd = result.data.department;
+					let rdl = result.data.location;
+
+					//	wstrzyknąć dane:
+					// console.log($("#modDepartment input"));
+					$("#frmDepartment #id")  .val(rdd.id);
+					$("#frmDepartment #name").val(rdd.name);
+					rdl.forEach(item => sel.append(new Option(item["name"], item["id"])));
+					sel.val(rdd.locationId);
+				}
+			);
+		}
+	});
+
+	//	Modal Location show:
+	$("#modLocation").on("show.bs.modal", (ev) => {
+		hideAlerts();
+		const src = ev.relatedTarget;
+
+		//	wyczyszczenie pól:
+		$("#frmLocation input").val("");
+
+		//	określenie typu operacji: Add or Edit:
+		if (src == $("#btnLocationAdd")[0]) {
+			//	skorygować modal:
+			$("#modDepartment h5").html("Add department");
+		}
+		else {
+			//	skorygować modal:
+			$("#modLocation h5").text("Edit location");
+
+			//	wypełnij aktualnymi danymi:
+			$.post("php/getLocationById.php",
+				{id: src.value},
+				result => {
+					let rd = result.data;
+
+					//	wstrzyknąć dane:
+					// console.log($("#modLocation input"));
+					$("#frmLocation #id")  .val(rd.id);
+					$("#frmLocation #name").val(rd.name);
+				}
+			);
+		}
+	});
+
+	$("#modEmployee")  .on("shown.bs.modal", () => $("#frmEmployee   input")[1].focus());
+	$("#modDepartment").on("shown.bs.modal", () => $("#frmDepartment input")[1].focus());
+	$("#modLocation")  .on("shown.bs.modal", () => $("#frmLocation   input")[1].focus());
+	//$(".modal").on("shown.bs.modal", () => $(".modal input")[1].focus());
+
+	//	button "Add" Employee:
+	// $("#modEmployee .btn-success").click(() => {
+	// $("#btnEmpAdd").click(() => {
+	$("#frmEmployee").submit((ev) => {		//	?co te "e" tu oznacza? event: submit
+		ev.preventDefault();
+
+		let endPoint;
+		if ($("#frmEmployee #id").val().length == 0) {
+			console.log("Event: Add Employee");
+			endPoint = "php/addEmployee.php";
+		} else {
+			console.log("Event: Edit Employee");
+			endPoint = "php/edtEmployee.php";
+		}	
+
+		$.post(endPoint,
+			{id:    $("#frmEmployee #id").val(),
+			 fName: $("#frmEmployee input")[1].value,
+			 lName: $("#frmEmployee input")[2].value,
+			 title: $("#frmEmployee input")[3].value,
+			 email: $("#frmEmployee input")[4].value,
+			 depId: $("#frmEmployee select").val()},
+			result => {
+				loadEmployees();
+				showAlertSuccess();
+				$("#modEmployee").modal("hide");
+			}
+		);
+	});
+
+	//	button "Edit" Employee:
+	// $("#btnEdt").click(() => {
+	$("#frmEmployee_").click((ev) => {
+		console.log("Event: Edit Employee");
+		ev.preventDefault();
+
+		$.post(endPoint,
+			{id:    $("#frmEmployee #id").val(),		//	potrzebne ukryte pole z id; dodałem
+			 fName: $("#frmEmployee input")[1].value,
+			 lName: $("#frmEmployee input")[2].value,
+			 title: $("#frmEmployee input")[3].value,
+			 email: $("#frmEmployee input")[4].value,
+			 depId: $("#frmEmployee select").val()},
+			 result => {
+				// console.log(result);
+				loadEmployees();
+				showAlertSuccess()
+				$("#modEmployee").modal("hide");
+			}
+		);
 	});
 
 	//	button "Add" Department:
 	// $("#modDepartment .btn-success").click(() => {
-	$("#btnDepAdd").click(() => {
-		if ($("#btnDepAdd").text() == "Add") {
+	// $("#btnDepAdd").click(() => {
+	$("#frmDepartment").submit((ev) => {
+		ev.preventDefault();
+
+		let endPoint;
+		if ($("#frmDepartment #id").val().length == 0) {
 			console.log("Event: Add Department");
-			//console.log($("#modDepartment input"));
-			//console.log($("#modDepartment input")[0]);
-			//console.log($("#modDepartment input")[0].value, $("#modDepartment input")[1].value);
-			//console.log($("#modDepartment select").val());
-			$.post("php/addDepartment.php",
-				// {name:		 $("#modDepartment input")[0].value,
-				//  locationID: $("#modDepartment input")[1].value},
-				{name:	$("#modDepartment #name" ).val(),
-				 locId:	$("#modDepartment select").val()},
-				result => {
-					// console.log(result);
-					loadDepartments();
-					$("div.alert-success").removeClass("visually-hidden");
-				}
-			);
+			endPoint = "php/addDepartment.php";
 		} else {
-			console.log("Event: Update Department");
-			$.post("php/updateDepartment.php",
-				{id:	$("#modDepartment #id")   .val(),
-				 name:	$("#modDepartment #name") .val(),
-				 locId:	$("#modDepartment select").val()},
-				result => {
-					// console.log(result);
-					loadDepartments();
-					$("div.alert-success").removeClass("visually-hidden");
-				}
-			);
+			console.log("Event: Edit Department");
+			endPoint = "php/edtDepartment.php";
 		}
+
+		$.post(endPoint,
+			{id:	$("#modDepartment #id")   .val(),
+			 name:	$("#modDepartment #name") .val(),
+			 locId:	$("#modDepartment select").val()},
+			result => {
+				loadDepartments();
+				showAlertSuccess();
+				$("#modDepartment").modal("hide");
+			}
+		);
 	});
 
 	//	button "Add" Location:
 	// $("#modLocation .btn-success").click(() => {
-	$("#btnLocAdd").click(() => {
-		if ($("#btnLocAdd").text() == "Add") {
+	// $("#btnLocAdd").click(() => {
+	$("#frmLocation").submit((ev) => {
+		ev.preventDefault();
+
+		let endPoint;
+		if ($("#frmLocation #id").val().length == 0) {
 			console.log("Event: Add Location");
-			//console.log($("#modLocation input").val());
-			$.post("php/addLocation.php", 
-				{name: $("#modLocation #name").val()},
-				result => {
-					// console.log(result);
-					loadLocations();
-					$("div.alert-success").removeClass("visually-hidden");
-				}
-			);
-			// .done($("div.alert-success").removeClass("visually-hidden"))
-			// .fail($("div.alert-warning").removeClass("visually-hidden"))
-			// .always(loadLocations());
+			endPoint = "php/addLocation.php";
 		} else {
-			console.log("Event: Update Location");
-			$.post("php/updateLocation.php",
-				{id:	$("#modLocation #id")   .val(),
-				 name:	$("#modLocation #name") .val()},
-				result => {
-					// console.log(result);
-					loadLocations();
-					$("div.alert-success").removeClass("visually-hidden");
-				}
-			);
+			console.log("Event: Edit Location");
+			endPoint = "php/edtLocation.php";
 		}
-	});
+
+		$.post(endPoint,
+			{id:	$("#modLocation #id")   .val(),
+			 name:	$("#modLocation #name") .val()},
+			result => {
+				loadLocations();
+				showAlertSuccess();
+				$("#modLocation").modal("hide");
+			}
+		);
+});
 
 	//	ustawienie kodu zdarzenia wszystkim klawiszom z klasą btn-close do kasowania wsztystkich alertów:
-	$("button.btn-close").click(() => $("div.alert").addClass("visually-hidden"));
+	$("button.btn-close").click(() => hideAlerts());
+
+	//	ładowanie danych o Employees:
+	// loadEmployees();	//	!to nie działa bo div jest jeszcze 'zwinięty'!
+	$("#btnEmployees").click();
+
 
 	//	testowanie jakie klasy się zmieniają po naciśnięciu klawiszy z głównego menu:
 	// $("body button").click(() => console.log("..."));
@@ -247,14 +377,13 @@ $(() => {
 
 //	====================== EMPLOYEES ========================
 function loadEmployees() {
+	hideAlerts();
+
+	if ($("#divDepartment").hasClass("show")) $("#btnDepartments").click();		//	?jak programowo chować colapsy?
+	if ($("#divLocation"  ).hasClass("show")) $("#btnLocations"  ).click();
+
 	// console.log($("#btnEmployees"));
 	// console.log($("#btnEmployees").hasClass("collapsed"));
-
-	$("div.alert").addClass("visually-hidden");
-
-	if ($("#divDepartment").hasClass("show")) $("#btnDepartments").click();
-	if ($("#divLocation")  .hasClass("show")) $("#btnLocations")  .click();
-
 	if (!$("#btnEmployees").hasClass("collapsed")) {
 		console.log("Load Employees:");
 
@@ -324,7 +453,7 @@ function fillEmployees(result) {
 	result.data.forEach(item =>
 		$("#employees").append("<div class='accordion-item'>\
 			<h2 class='accordion-header' id='heading'>\
-				<button class='accordion-button' type='button' data-bs-toggle='collapse' data-bs-target='#collapse" + item["id"] + "' aria-expanded='false' aria-controls='collapse" + item["id"] + "'>"
+				<button class='btn btn-light w-100 text-start' type='button' data-bs-toggle='collapse' data-bs-target='#collapse" + item["id"] + "' aria-expanded='true' aria-controls='collapse" + item["id"] + "'>"
 					+ item["lastName"] + " " + item["firstName"] +
 				"</button>\
 			</h2>\
@@ -338,11 +467,11 @@ function fillEmployees(result) {
 		</div>")
 	);
 
-	$(".editEmp").click(editEmployee);
+	// $(".editEmp").click(editEmployee);
 	$(".delEmp").click(delEmployee);
 }
 
-function editEmployee() {
+function _editEmployee() {
 	// console.log("editEmployee:", this.value);	//	bo button dostał taki atrybut
 	// console.log($().val());			//	undefined
 	// console.log($(this).val());		//	23
@@ -354,7 +483,7 @@ function editEmployee() {
 	$("#btnEmpAdd").text("Update");
 
 	//	wywołać modal: modal się wywołuje automatycznie (bootstrap)
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	$.post("php/getPersonnelById.php",
 		{id: this.value},
@@ -382,7 +511,7 @@ function editEmployee() {
 
 function delEmployee() {
 	console.log("delEmployee:", this.value);	//	'value' to atrybut elementu html
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	$.post("php/delEmployee.php", {id: this.value}, result => {
 		if (result.status.code == 200) {
@@ -419,7 +548,7 @@ function delEmployee() {
 
 //	==================== DEPARTMENTS ==========================
 function loadDepartments() {
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	if ($("#divEmployee").hasClass("show")) $("#btnEmployees").click();
 	if ($("#divLocation").hasClass("show")) $("#btnLocations").click();
@@ -449,7 +578,6 @@ function loadDepartments() {
 							</tbody>\
 						</table>"*/
 						"<tr>\
-							<td>" + item["id"] + "</td>\
 							<td>" + item["name"] + "</td>\
 							<td>" + item["locName"] + "</td>\
 							<td>\
@@ -459,21 +587,21 @@ function loadDepartments() {
 						</tr>");
 				});
 
-				$(".editDep").click(editDepartment);
+				// $(".editDep").click(editDepartment);
 				$(".delDep") .click(delDepartment);
 			}
 		});
 	}
 }
 
-function editDepartment() {
+function _editDepartment() {
 	console.log("editDepartment:", this.value);
 
 	//	skorygować modal:
 	$("#modDepartment h5").text("Update department");
 	$("#btnDepAdd").text("Update");
 
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	$.post("php/getDepartmentById.php",
 		{id: this.value},
@@ -499,7 +627,7 @@ function editDepartment() {
 
 function delDepartment() {
 	console.log("delDepartment:", this.value);	//	'value' to atrybut elementu html
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	$.post("php/delDepartment.php", {id: this.value}, result => {
 		if (result.status.code == 200) {
@@ -521,7 +649,7 @@ function delDepartment() {
 
 //	======================= LOCATIONS ===========================
 function loadLocations() {
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	if ($("#divEmployee")  .hasClass("show")) $("#btnEmployees")  .click();
 	if ($("#divDepartment").hasClass("show")) $("#btnDepartments").click();
@@ -538,7 +666,6 @@ function loadLocations() {
 				result.data.forEach(item => {
 					$("#locations").append(
 						"<tr>\
-							<td>" + item["id"] + "</td>\
 							<td>" + item["name"] + "</td>\
 							<td><button type='button' class='btn btn-warning editLoc' data-bs-toggle='modal' data-bs-target='#modLocation' value='" + item["id"] + "'>Edit</button></td>\
 							<td><button type='button' class='btn btn-danger delLoc' value='" + item["id"] + "'>Delete</button></td>\
@@ -572,21 +699,21 @@ function loadLocations() {
 						</table>"*/);
 				});
 
-				$(".editLoc").click(editLocation);
+				// $(".editLoc").click(editLocation);
 				$(".delLoc") .click(delLocation);
 			}
 		});
 	}
 }
 
-function editLocation() {
+function _editLocation() {
 	console.log("editLocation:", this.value);
 
 	//	skorygować modal:
 	$("#modLocation h5").text("Update location");
 	$("#btnLocAdd").text("Update");
 
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	$.post("php/getLocationById.php",
 		{id: this.value},
@@ -604,7 +731,7 @@ function editLocation() {
 
 function delLocation() {
 	console.log("deleteLocation:", this.value);	//	'value' to atrybut elementu html
-	$("div.alert").addClass("visually-hidden");
+	hideAlerts();
 
 	$.post("php/delLocation.php", {id: this.value}, result => {
 		//console.log($("div.alert-danger"));

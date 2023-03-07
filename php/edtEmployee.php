@@ -1,6 +1,5 @@
 <?php
-	// example use from browser
-	// http://localhost/companydirectory/libs/php/getAllDepartments.php
+	// var_dump($_REQUEST);
 
 	// remove next two lines for production
 	ini_set('display_errors', 'On');
@@ -20,25 +19,22 @@
 		exit;
 	}
 
-	$sql	= "SELECT D.id, D.name, L.name AS locName FROM department D, location L WHERE D.locationID = L.id ORDER BY D.name";
-	$result = $conn->query($sql);
+	$stmt = $conn->prepare("UPDATE personnel SET firstName = ?, lastName = ?, jobTitle = ?, email = ?, departmentID = ? WHERE id = ?");
+	$stmt->bind_param("ssssii", $_POST["fName"], $_POST["lName"], $_POST["title"], $_POST["email"], $_POST["depId"], $_POST["id"]);
+	$stmt->execute();
+	// var_dump($stmt);
 
-	if (!$result) {
+	if ($stmt === false) {
 		$output['status']['code'] = "400";
 		$output['status']['name'] = "executed";
-		$output['status']['description'] = "query failed";	
+		$output['status']['description'] = "query failed";
 	} else {
-		$data = [];
-		while ($row = $result->fetch_assoc())
-			array_push($data, $row);
-
 		$output['status']['code'] = "200";
-		$output['status']['name'] = "ok";
-		$output['status']['description'] = "success";
+		$output['status']['name'] = "Ok";
+		$output['status']['description'] = "Success";
 		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) * 1000 . " ms";
-		$output['data'] = $data;
 	}
-	$output['status']['query'] = $sql;
+	// $output['data'] = "";
 
 	$conn->close();
 	echo json_encode($output);

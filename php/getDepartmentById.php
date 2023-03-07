@@ -52,7 +52,7 @@
 		$output['status']['name'] = "Ok";
 		$output['status']['description'] = "Success";
 		$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) * 1000 . " ms";
-		// $output['data']['department']  = $stmt->get_result()->fetch_assoc();
+		// $output['data']['department']  = $stmt->get_result()->fetch_assoc();		//	przeniesiono wyżej
 		$output['data']['location'] = $location;
 	}
 

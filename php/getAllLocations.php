@@ -20,7 +20,7 @@
 		exit;
 	}
 
-	$sql	= "SELECT * FROM location";
+	$sql	= "SELECT * FROM location ORDER BY name";
 	$result = $conn->query($sql);
 
 	if (!$result) {
